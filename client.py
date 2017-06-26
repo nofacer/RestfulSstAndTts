@@ -1,6 +1,6 @@
 #!usr/bin/env python
 # coding=utf-8
-
+import os
 import numpy as np
 from pyaudio import PyAudio, paInt16
 from datetime import datetime
@@ -46,20 +46,26 @@ def record_wave(socket):
     save_buffer = []
     if_first = 0
     while True:
+
         string_audio_data = stream.read(NUM_SAMPLES)
-       
+        # print((str(string_audio_data).encode('utf-8').decode()))
+        print('*')
         audio_data = np.fromstring(string_audio_data, dtype=np.short)
         large_sample_count = np.sum(audio_data > LEVEL)
         if large_sample_count > COUNT_NUM:
+            print('Catching...')
             save_count = SAVE_LENGTH
             if_first = 1
         else:
             save_count -= 1
         if save_count < 0:
             save_count = 0
+        print(save_count)
         if save_count > 0:
+
             save_buffer.append(string_audio_data)
         else:
+            print(if_first)
             if (len(save_buffer) > 0) and if_first > 0:
                 filename ="/wav" + datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + ".wav"
 
