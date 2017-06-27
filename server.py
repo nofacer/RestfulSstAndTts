@@ -4,7 +4,9 @@ import urllib.request
 import urllib
 import json
 import base64
-
+import vlc
+import wave
+import pyaudio
 
 class BaiduRest:
     def __init__(self, cu_id, api_key, api_secert):
@@ -31,7 +33,8 @@ class BaiduRest:
     def getVoice(self, text, filename):
         # 2. 向Rest接口提交数据
         get_url = self.getvoice_url % (urllib.parse.quote(text), self.cu_id, self.token_str)
-
+        p = vlc.MediaPlayer(get_url)
+        p.play()
         voice_data = urllib.request.urlopen(get_url).read()
         # 3.处理返回数据
         voice_fp = open(filename,'wb+')
@@ -52,32 +55,55 @@ class BaiduRest:
         voice_data = wav_fp.read()
         data['len'] = len(voice_data)
         data['speech'] = base64.b64encode(voice_data).decode('utf-8')
-        print(data)
+
         post_data = json.dumps(data)
         r_data = urllib.request.urlopen(self.upvoice_url,data=bytes(post_data,encoding="utf-8")).read()
+        wav_fp.close()
+        if os.path.exists(filename):
+            os.remove(filename)
+        else:
+            print("no such file")
         # 3.处理返回数据
         temp=json.loads(r_data.decode('utf-8'))
         print(temp)
-        return json.loads(r_data.decode('utf-8'))['result']
+        try:
+            result=json.dumps(temp['result'], ensure_ascii=False).replace('"',"").replace('[',"").replace(']',"").replace('，',"")
+        except:
+            result="error"
+
+        return  result
+
+def play_wav(filename):
+    p = vlc.MediaPlayer(filename)
+    p.play()
+    p.stop()
+
 
 if __name__ == "__main__":
-    # 我的api_key,供大家测试用，在实际工程中请换成自己申请的应用的key和secert
-
-    api_key = "HHDkfiKXG1Zyzzu7VC65iW9Q"
-    api_secert = "vqLn7zaeiq3Rd3wPI67HGuhMZErLNmP2"
-    # 初始化
-    bdr = BaiduRest("test_python", api_key, api_secert)
-    # 将字符串语音合成并保存为out.mp3
-    bdr.getVoice("哈哈哈!", "out.mp3")
-    # 识别test.wav语音内容并显示
-    print(bdr.getText("out.wav"))
-
-    print ('Process id:',str(os.getpid()) )
-    # server
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.bind('tcp://127.0.0.1:5555')
-    while True:
-        msg = socket.recv().decode('utf-8')
-        print(msg)
-        socket.send_string('ah ha!')
+    # print('Process id:', str(os.getpid()))
+    # # 我的api_key,供大家测试用，在实际工程中请换成自己申请的应用的key和secert
+    #
+    # api_key = "HHDkfiKXG1Zyzzu7VC65iW9Q"
+    # api_secert = "vqLn7zaeiq3Rd3wPI67HGuhMZErLNmP2"
+    # # 初始化
+    # bdr = BaiduRest("test_python", api_key, api_secert)
+    # # 将字符串语音合成并保存为out.mp3
+    # # bdr.getVoice("哈哈哈!", "out.mp3")
+    # # 识别test.wav语音内容并显示
+    # # print(bdr.getText("out.wav"))
+    #
+    #
+    # # server
+    # context = zmq.Context()
+    # socket = context.socket(zmq.REP)
+    # socket.bind('tcp://127.0.0.1:5555')
+    # while True:
+    #     msg = socket.recv().decode('utf-8')
+    #     voice2text=bdr.getText(msg)
+    #     print(voice2text)
+    #     if(voice2text=="你叫什么名字"):
+    #         bdr.getVoice("我叫王八蛋", "out.mp3")
+    #         play_wav("out.mp3")
+    #
+    #     socket.send_string("received")
+    bdr.getVoice("我叫王八蛋", "out.mp3")

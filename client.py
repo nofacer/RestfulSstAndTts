@@ -65,9 +65,9 @@ def record_wave(socket):
 
             save_buffer.append(string_audio_data)
         else:
-            print(if_first)
+
             if (len(save_buffer) > 0) and if_first > 0:
-                filename ="/wav" + datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + ".wav"
+                filename ="wav/" + datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + ".wav"
 
                 save_wave_file(socket,filename, save_buffer)
                 save_buffer = []
