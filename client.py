@@ -47,7 +47,7 @@ def record_wave(socket):
     if_first = 0
     while True:
 
-        string_audio_data = stream.read(NUM_SAMPLES)
+        string_audio_data = stream.read(NUM_SAMPLES,exception_on_overflow = False)
         # print((str(string_audio_data).encode('utf-8').decode()))
         print('*')
         audio_data = np.fromstring(string_audio_data, dtype=np.short)
